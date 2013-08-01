@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="blocks/rk_fragesystem/db" VERSION="20130723" COMMENT="XMLDB file for Moodle blocks/rk_fragesystem"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="rk_fragesystem" COMMENT="Default comment for rk_fragesystem, please edit me" NEXT="block_rk_user_quizes">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_rk_user_quizes" COMMENT="Zuordnung welcher User welches Quiz erstellt hat" PREVIOUS="rk_fragesystem" NEXT="block_rk_user_kartei">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="createdby"/>
+        <FIELD NAME="createdby" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="welcher user das quiz erstellt hat" PREVIOUS="id" NEXT="quizid"/>
+        <FIELD NAME="quizid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Fremdschlüssel Quiz" PREVIOUS="createdby"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_rk_user_kartei" COMMENT="Lernkartei" PREVIOUS="block_rk_user_quizes" NEXT="block_rk_user_kartei_frage">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="title"/>
+        <FIELD NAME="title" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Bezeichnung" PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="userid" PREVIOUS="title"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_rk_user_kartei_frage" COMMENT="Assoziationstabelle zwischen Kartei - Frage" PREVIOUS="block_rk_user_kartei">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="karteiid"/>
+        <FIELD NAME="karteiid" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="Fremdschlüssel Karteiid" PREVIOUS="id" NEXT="frageid"/>
+        <FIELD NAME="frageid" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="Fremdschlüssel Frage" PREVIOUS="karteiid" NEXT="level"/>
+        <FIELD NAME="level" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="1" SEQUENCE="false" PREVIOUS="frageid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="fk_karteiid"/>
+        <KEY NAME="fk_karteiid" TYPE="foreign" FIELDS="karteiid" REFTABLE="block_rk_user_kartei" REFFIELDS="id" COMMENT="Fremdschlüsesl Karteiid" PREVIOUS="primary" NEXT="fk_frageid"/>
+        <KEY NAME="fk_frageid" TYPE="foreign" FIELDS="frageid" REFTABLE="question" REFFIELDS="id" COMMENT="Fremdschlüssel Frage" PREVIOUS="fk_karteiid"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
