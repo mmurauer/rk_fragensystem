@@ -52,8 +52,6 @@ if ($action == 'delete') {
 	}
 }
 
-block_rk_fragesystem_print_header("flashcards");
-
 $editform = new block_rk_fragesystem_flashcard_edit_form($_SERVER['REQUEST_URI'].'&courseid='.$courseid);
 
 if ($editform->is_cancelled()){
@@ -73,7 +71,8 @@ if ($editform->is_cancelled()){
 				print_error("bookmarknotfound", "block_exabis_eportfolio");
 			}
             $existing->title = $fromform->title;
-			$cmid = block_rk_fragesystem_edit_flashcard($existing);
+			//$cmid = block_rk_fragesystem_edit_flashcard($existing);
+			block_rk_fragesystem_edit_flashcard($existing);
 		break;
 
 		default:
@@ -82,6 +81,9 @@ if ($editform->is_cancelled()){
 	
 	redirect($finishurl.$id);
 }
+
+block_rk_fragesystem_print_header("flashcards");
+
 if($existing)
     $editform->set_data ($existing);
 $editform->display();

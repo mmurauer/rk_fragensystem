@@ -56,7 +56,7 @@ block_rk_fragesystem_print_kartei_categories($karteicategories, $courseid, $id);
 echo '</div>';
 echo '</td><td valign="top"  width="50%">';
 echo '<div class="generalbox quizquestions box">';
-echo '<h2 class="main">Kategorie-Übersicht</h2>';
+echo '<h2 class="main">Kategorie-&Uuml;bersicht</h2>';
 
 block_rk_fragesystem_print_category_checkbox($categories, $courseid, $id, $karteicategories);
 echo '</div>';
@@ -69,7 +69,7 @@ echo '</table>';
 $OUTPUT->footer($course);
 } else {
 	echo '<div class="generalbox flashcards box">
-<h2 class="main">Karteiübersicht</h2>';
+<h2 class="main">Kartei&uuml;bersicht</h2>';
 	
 	$qanzahl = block_rk_fragesystem_count_kartei_questions($id);
 	//legt genauigkeit für prozentrechnung fest
@@ -80,8 +80,11 @@ $OUTPUT->footer($course);
 
 	for($i=1;$i<7;$i++) {
 		$level = block_rk_fragesystem_get_kartei_level($id,$i);
-		$prozent = bcdiv($level, $qanzahl) * 100;
-		
+		if($qanzahl > 0){
+			$prozent = bcdiv($level, $qanzahl) * 100;
+		}else{
+			$prozent = 0;
+		}
 		$url = $CFG->wwwroot . '/blocks/rk_fragesystem/level.php?id='.$id.'&courseid='.$courseid.'&level=';
 		echo '<tr>';
 			if($level > 0)

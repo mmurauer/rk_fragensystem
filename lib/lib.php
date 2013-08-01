@@ -402,7 +402,7 @@ function block_rk_fragesystem_edit_test($post) {
 function block_rk_fragesystem_edit_flashcard($post) {
 	global $DB;
 	$DB->update_record('block_rk_user_kartei', $post);
-	return $cm->id;
+	//return $post->id;
 }
 
 /**
