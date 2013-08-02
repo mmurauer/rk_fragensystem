@@ -87,4 +87,6 @@ block_rk_fragesystem_print_header("flashcards");
 if($existing)
     $editform->set_data ($existing);
 $editform->display();
+
+echo $OUTPUT->footer();
 ?>

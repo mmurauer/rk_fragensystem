@@ -1,7 +1,7 @@
 <?php
 
 require_once dirname(__FILE__) . '/inc.php';
-global $DB;
+global $DB, $OUTPUT;
 $courseid = required_param('courseid',  PARAM_INT);
 
 $url = '/blocks/rk_fragesystem/mytests.php?courseid=' . $courseid;
@@ -26,3 +26,4 @@ if($copyid) {
 <h2 class="main">Test&uuml;bersicht</h2>
 <?php block_rk_fragesystem_mytest_list($courseid); ?>
 </div>
+<?php echo $OUTPUT->footer();?>

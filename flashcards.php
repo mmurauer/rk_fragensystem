@@ -1,5 +1,5 @@
 <?php
-global $DB;
+global $DB, $OUTPUT;
 require_once dirname(__FILE__) . '/inc.php';
 
 $courseid = required_param('courseid', PARAM_INT);
@@ -23,3 +23,4 @@ block_rk_fragesystem_print_header("flashcards");
 <h2 class="main">Kartei&uuml;bersicht</h2>
 <?php block_rk_fragesystem_flashcard_list($courseid); ?>
 </div>
+<?php echo $OUTPUT->footer();?>
