@@ -100,7 +100,7 @@ function block_rk_fragesystem_flashcard_list($courseid) {
 	<th class="header c0" scope="col" style="vertical-align:top; text-align:center;;white-space:nowrap;">Aktionen</th>
 	</tr>';
 	if (!$flashcards) {
-		echo '<tr><td>Keine Karteien vorhanden</td></tr>';
+		echo '<tr><td colspan="2">Keine Karteien vorhanden</td></tr>';
 	} else {
 		foreach ($flashcards as $flashcard) {
 
@@ -112,8 +112,8 @@ function block_rk_fragesystem_flashcard_list($courseid) {
 			echo '</td></tr>';
 		}
 	}
-	echo '<tr><td>';
-	echo '</td></tr>';
+	//echo '<tr><td>';
+	//echo '</td></tr>';
 	echo '</table>';
 	echo '<form method="post" action="addflashcard.php?action=add&courseid=' . $courseid . '">';
 	echo '<input type="submit" value=" Neue Kartei erstellen">';
@@ -160,14 +160,14 @@ function block_rk_fragesystem_mytest_list($courseid) {
 			$quizinstance = $DB->get_record('quiz', array('id'=> $quiz->quizid));
 			$cm = $DB->get_record('course_modules', array('module'=> $mod->id, 'instance'=> $quiz->quizid));
 			echo '<tr align="center"><td valign="top">';
-			echo '<a href="'.$CFG->wwwroot.'/blocks/rk_fragesystem/attempt.php?courseid='.$COURSE->id.'&id='.$cm->id.'">'.$quizinstance->name.'</a>';
+			echo '<a href="'.$CFG->wwwroot.'/blocks/rk_fragesystem/startattempt.php?courseid='.$COURSE->id.'&id='.$cm->id.'">'.$quizinstance->name.'</a>';
 			echo '</td><td>';
 			echo "<a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/edit.php?courseid=" . $COURSE->id . "&action=edit&cmid=" . $cm->id . "'><img width=\"16px\" height=\"16px\" src=\"pix/pencil.png\" alt='Edit' title='Editieren' /></a>";
 			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/addtest.php?courseid=" . $COURSE->id . "&action=delete&id=" . $quizinstance->id . "'><img width=\"16px\" height=\"16px\" src=\"pix/cross.png\" alt='Delete' title='L�schen'/></a>";
 			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/mytests.php?courseid=" . $COURSE->id . "&copyid=" . $quizinstance->id . "'><img src=\"$CFG->wwwroot/pix/i/backup.gif\" alt='Kopieren' title='Kopieren' /></a>";
 			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/review.php?courseid=" . $COURSE->id . "&id=" . $quizinstance->id . "'><img src=\"$CFG->wwwroot/pix/i/grades.gif\" alt='Review' title='Ergebnisse' /></a>";
 			echo "</td><td>";
-			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/printtest.php?courseid=" . $COURSE->id . "&id=" . $quizinstance->id . "' target='_blank'><img src=\"$CFG->wwwroot/pix/f/pdf.gif\" alt='Print' title='Drucken' /></a>";
+			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/printtest.php?courseid=" . $COURSE->id . "&id=" . $quizinstance->id . "' target='_blank'><img src=\"pix/pdf_red.gif\" alt='Print' title='Drucken' /></a>";
 			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/printtest.php?courseid=" . $COURSE->id . "&id=" . $quizinstance->id . "&correct=1' target='_blank'><img src=\"pix/pdf.gif\" alt='Print' title='Korrekturtest drucken' /></a>";
 			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/exportcsv.php?courseid=" . $COURSE->id . "&id=" . $quizinstance->id . "' target='_blank'><img width=\"16px\" height=\"16px\" src=\"pix/icon-csv.gif\" alt='csv' title='Csv Export'/></a>";
 			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/exportcsv.php?correct=1&courseid=" . $COURSE->id . "&id=" . $quizinstance->id . "' target='_blank'><img width=\"16px\" height=\"16px\" src=\"pix/icon-csv korrekt.png\" alt='csv' title='Csv Export'/></a>";
@@ -402,7 +402,7 @@ function block_rk_fragesystem_edit_test($post) {
 function block_rk_fragesystem_edit_flashcard($post) {
 	global $DB;
 	$DB->update_record('block_rk_user_kartei', $post);
-	//return $post->id;
+	//return $cm->id;
 }
 
 /**
@@ -421,6 +421,7 @@ function block_rk_fragesystem_add_test($post, $courseid, $copy = false) {
 		$post->questions = "";
 		$post->subnet = "";
 		$post->password = "";
+		$post->preferredbehaviour= "deferredfeedback";
 	}
 
 	$post->id = $DB->insert_record('quiz', $post);
@@ -541,18 +542,20 @@ function block_rk_fragesystem_list_question_categories_new($thiscontext, $course
 		if($context->instanceid == $COURSE->id && $context->contextlevel == 50)
 			continue;
 			
-		$cats = $DB->get_record('question_categories', array('contextid'=> $context->id, 'parent'=> 0));
+		$cats = $DB->get_records('question_categories', array('contextid'=> $context->id, 'parent'=> 0));
 
-		$subcategories = block_rk_fragesystem_get_sub_categories($cats);
-		if($subcategories == null) {
-			$cats->count = $DB->count_records('question', array('category'=>$cats->id));
-
-		} else
-			$cats->count = 0;
-
-		$cats->level = 0;
-		$categories[] = $cats;
-		$categories = array_merge($categories,$subcategories);
+		foreach($cats as $cat) {
+			$subcategories = block_rk_fragesystem_get_sub_categories($cat);
+			if($subcategories == null) {
+				$cat->count = $DB->count_records('question', array('category'=>$cat->id));
+	
+			} else
+				$cat->count = 0;
+	
+			$cat->level = 0;
+			$categories[] = $cat;
+			$categories = array_merge($categories,$subcategories);
+		}
 
 	}
 
@@ -577,7 +580,7 @@ function block_rk_fragesystem_get_sub_categories($parent, $level = 1) {
 
 	foreach($categories as $category) {
 
-		if($DB->get_record('question_categories', array('parent'=>$category->id))) {
+		if($DB->get_records('question_categories', array('parent'=>$category->id))) {
 
 			$category->count = 0;
 			$subcategories[] = $category;
@@ -607,8 +610,12 @@ function block_rk_fragesystem_print_category_dropdown($categories, $courseid, $c
 			echo '<option ' . $selected . ' value="allquestions.php?courseid=' . $courseid . '&cat=' . $category->id . '">';
 		else
 			echo '<option ' . $selected . ' value="edit.php?courseid=' . $courseid . '&cmid=' . $cmid . '&cat=' . $category->id . '">';
-		//for($i=0;$i<$category->level;$i++)
-		//echo '&nbsp;';
+		
+		if(!isset($category->level))
+			$category->level = 0;
+		
+		for($i=0;$i<$category->level;$i++)
+		echo '&nbsp;';
 			
 		echo $category->name . ' ('.$category->count.')</option>';
 	}
@@ -717,6 +724,9 @@ function block_rk_fragesystem_print_category_checkbox($categories, $courseid, $i
 			continue;
 
 		if(array_key_exists($category->id,$karteicategories)) continue;
+		if(!isset($category->level))
+			$category->level = 0;
+		
 		for($i=0;$i<$category->level;$i++)
 			echo '&nbsp;';
 		if($category->count>0)
@@ -853,7 +863,7 @@ function block_rk_fragesystem_print_quiz_questions($quiz, $pageurl) {
 
 				echo '<td>' . format_string($question->name) . '</td>';
 				echo '<td  valign="center"; align="center">';
-				print_question_icon($question);
+				echo print_question_icon($question);
 				echo "</td>";
 				echo '<td  valign="center"; align="center">';
 
@@ -870,7 +880,7 @@ function block_rk_fragesystem_print_quiz_questions($quiz, $pageurl) {
 					echo "<a title=\"$strview\" href=\"" . $questionurl->out(false, array('id' => $question->id)) . "\"><img
 					src=\"$CFG->wwwroot/pix/i/info.gif\" alt=\"$strview\" /></a>&nbsp;";
 				}
-				echo "<a title=\"$strremove\" href=\"" . $pageurl->out(true, array('delete' => $count,'sesskey' => sesskey())) . "\"><img src=\"$CFG->wwwroot/pix/t/removeright.gif\" class=\"iconsmall\" alt=\"$strremove\" /></a>";
+				echo "<a title=\"$strremove\" href=\"" . $pageurl->out(true, array('delete' => $question->id,'sesskey' => sesskey())) . "\"><img src=\"$CFG->wwwroot/pix/t/removeright.gif\" class=\"iconsmall\" alt=\"$strremove\" /></a>";
 
 
 				echo "</td></tr>";
@@ -908,10 +918,10 @@ function block_rk_fragesystem_print_question_list($cat, $courseid, $cmid, $searc
 
 	echo '<form action="' . $returnurl . '" method="post">';
 	echo '<table id="categoryquestions" style="width: 100%"><tr>';
-	echo "<th style=\"white-space:nowrap; text-align: left;\" class=\"header\" scope=\"col\">Aktion</th>";
+	echo "<th style=\"white-space:nowrap; text-align: left; width:10%\" class=\"header\" scope=\"col\">Aktion</th>";
 
 	echo "<th style=\"white-space:nowrap; text-align: left;\" class=\"header\" scope=\"col\">Frage</th>
-	<th style=\"white-space:nowrap; text-align: right;\" class=\"header\" scope=\"col\">Typ</th>";
+	<th style=\"white-space:nowrap; text-align: right; width:10%\" class=\"header\" scope=\"col\">Typ</th>";
 	echo "</tr>\n";
 	foreach ($questions as $question) {
 		if ($question->hidden == 1 OR $question->qtype != "multichoice" && $question->qtype != "truefalse" && $question->qtype != "shortanswer")
@@ -945,8 +955,8 @@ function block_rk_fragesystem_print_question_list($cat, $courseid, $cmid, $searc
 
 			echo '</td>';
 			echo '<td>' . $question->name . '</td>';
-			echo '<td>';
-			print_question_icon($question);
+			echo '<td style="text-align: right;">';
+			echo print_question_icon($question);
 			echo '</td>';
 			echo '</tr>';
 		}

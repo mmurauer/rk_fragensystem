@@ -30,6 +30,153 @@ require_once($CFG->libdir . '/questionlib.php');
 
 define('DEFAULT_QUESTIONS_PER_PAGE', 20);
 
+/**
+ * Add a question to a quiz
+ *
+ * Adds a question to a quiz by updating $quiz as well as the
+ * quiz and quiz_question_instances tables. It also adds a page break
+ * if required.
+ * @param int $id The id of the question to be added
+ * @param object $quiz The extended quiz object as used by edit.php
+ *      This is updated by this function
+ * @param int $page Which page in quiz to add the question on. If 0 (default),
+ *      add at the end
+ * @return bool false if the question was already in the quiz
+ */
+function quiz_add_quiz_question($id, $quiz, $page = 0) {
+	global $DB, $CFG;
+	
+	$questions = explode(',', quiz_clean_layout($quiz->questions));
+	if (in_array($id, $questions)) {
+		return false;
+	}
+
+	// Remove ending page break if it is not needed.
+	if ($breaks = array_keys($questions, 0)) {
+		// Determine location of the last two page breaks.
+		$end = end($breaks);
+		$last = prev($breaks);
+		$last = $last ? $last : -1;
+		if (!$quiz->questionsperpage || (($end - $last - 1) < $quiz->questionsperpage)) {
+			array_pop($questions);
+		}
+	}
+	if (is_int($page) && $page >= 1) {
+		$numofpages = quiz_number_of_pages($quiz->questions);
+		if ($numofpages<$page) {
+			// The page specified does not exist in quiz.
+			$page = 0;
+		} else {
+			// Add ending page break - the following logic requires doing
+			// this at this point.
+			$questions[] = 0;
+			$currentpage = 1;
+			$addnow = false;
+			foreach ($questions as $question) {
+				if ($question == 0) {
+					$currentpage++;
+					// The current page is the one after the one we want to add on,
+					// so we add the question before adding the current page.
+					if ($currentpage == $page + 1) {
+						$questions_new[] = $id;
+					}
+				}
+				$questions_new[] = $question;
+			}
+			$questions = $questions_new;
+		}
+	}
+	if ($page == 0) {
+		// Add question.
+		$questions[] = $id;
+		// Add ending page break.
+		$questions[] = 0;
+	}
+
+	// Save new questionslist in database.
+	$quiz->questions = implode(',', $questions);
+	$DB->set_field('quiz', 'questions', $quiz->questions, array('id' => $quiz->id));
+
+	// Add the new question instance.
+	$instance = new stdClass();
+	$instance->quiz = $quiz->id;
+	$instance->question = $id;
+	$instance->grade = $DB->get_field('question', 'defaultmark', array('id' => $id));
+	$DB->insert_record('quiz_question_instances', $instance);
+}
+
+/**
+ * Remove a question from a quiz
+ * @param object $quiz the quiz object.
+ * @param int $questionid The id of the question to be deleted.
+ */
+function quiz_remove_question($quiz, $questionid) {
+	global $DB;
+
+	$questionids = explode(',', $quiz->questions);
+	$key = array_search($questionid, $questionids);
+	if ($key === false) {
+		return;
+	}
+
+	unset($questionids[$key]);
+	$quiz->questions = implode(',', $questionids);
+	$DB->set_field('quiz', 'questions', $quiz->questions, array('id' => $quiz->id));
+	$DB->delete_records('quiz_question_instances',
+			array('quiz' => $quiz->instance, 'question' => $questionid));
+}
+
+/**
+ * Clean the question layout from various possible anomalies:
+ * - Remove consecutive ","'s
+ * - Remove duplicate question id's
+ * - Remove extra "," from beginning and end
+ * - Finally, add a ",0" in the end if there is none
+ *
+ * @param $string $layout the quiz layout to clean up, usually from $quiz->questions.
+ * @param bool $removeemptypages If true, remove empty pages from the quiz. False by default.
+ * @return $string the cleaned-up layout
+ */
+function quiz_clean_layout($layout, $removeemptypages = false) {
+	// Remove repeated ','s. This can happen when a restore fails to find the right
+	// id to relink to.
+	$layout = preg_replace('/,{2,}/', ',', trim($layout, ','));
+
+	// Remove duplicate question ids.
+	$layout = explode(',', $layout);
+	$cleanerlayout = array();
+	$seen = array();
+	foreach ($layout as $item) {
+		if ($item == 0) {
+			$cleanerlayout[] = '0';
+		} else if (!in_array($item, $seen)) {
+			$cleanerlayout[] = $item;
+			$seen[] = $item;
+		}
+	}
+
+	if ($removeemptypages) {
+		// Avoid duplicate page breaks.
+		$layout = $cleanerlayout;
+		$cleanerlayout = array();
+		$stripfollowingbreaks = true; // Ensure breaks are stripped from the start.
+		foreach ($layout as $item) {
+			if ($stripfollowingbreaks && $item == 0) {
+				continue;
+			}
+			$cleanerlayout[] = $item;
+			$stripfollowingbreaks = $item == 0;
+		}
+	}
+
+	// Add a page break at the end if there is none.
+	if (end($cleanerlayout) !== '0') {
+		$cleanerlayout[] = '0';
+	}
+
+	return implode(',', $cleanerlayout);
+}
+
 function get_module_from_cmid($cmid) {
     global $CFG, $DB;
     if (!$cmrec = $DB->get_record_sql("SELECT cm.*, md.name as modname

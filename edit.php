@@ -97,7 +97,7 @@ function module_specific_controls($totalnumber, $recurse, $category, $cmid) {
             $randomcount[$i] = $i;
         }
         $out .= '<br />';
-        $out .= html_writer::select($randomcount, 'random_quiz',array(1),null,array("onchange"=>"document.location.href='".$CFG->wwwroot.$PAGE->url."courseid=".$COURSE->id."&viewid='+this.value;"));
+        $out .= html_writer::select($randomcount, 'randomcount',array(1),null);
        // $out .= get_string('addrandom', 'quiz', choose_from_menu($randomcount, 'randomcount', '1', '', '', '', true));
         $out .= 'Zufallsfrage(n)';
         $out .= '<input type="hidden" name="recurse" value="' . $recurse . '" />';
