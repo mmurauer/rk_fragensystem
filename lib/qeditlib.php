@@ -1596,7 +1596,10 @@ class question_bank_view {
 
             if ($canmoveall && count($addcontexts)) {
                 echo '<input type="submit" name="move" value="'.get_string('moveto', 'question')."\" />\n";
-                question_category_select_menu($addcontexts, false, 0, "$category->id,$category->contextid");
+                 if($myquestions)
+                	question_category_select_menu_myquestions($addcontexts, false, 0, "$category->id,$category->contextid");
+                else	
+                	question_category_select_menu($addcontexts, false, 0, "$category->id,$category->contextid");
             }
 
             if (function_exists('module_specific_controls') && $canuseall) {
@@ -2124,5 +2127,22 @@ function get_categories_for_contexts_myquestions($contexts, $sortorder = 'parent
          ORDER BY $sortorder";
          
     return $DB->get_records_sql($sql);
+}
+function question_category_select_menu_myquestions($contexts, $top = false, $currentcat = 0,
+        $selected = "", $nochildrenof = -1) {
+    global $OUTPUT;
+    $categoriesarray = question_category_options_myquestions($contexts, $top, $currentcat,
+            false, $nochildrenof);
+    if ($selected) {
+        $choose = '';
+    } else {
+        $choose = 'choosedots';
+    }
+    $options = array();
+    foreach ($categoriesarray as $group => $opts) {
+        $options[] = array($group => $opts);
+    }
+    echo html_writer::label($selected, 'menucategory', false, array('class' => 'accesshide'));
+    echo html_writer::select($options, 'category', $selected, $choose);
 }
 
