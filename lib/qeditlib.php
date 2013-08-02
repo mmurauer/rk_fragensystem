@@ -1391,7 +1391,7 @@ class question_bank_view {
         echo $OUTPUT->heading(get_string('questionbank', 'question'), 2);
 
         $this->display_category_form($this->contexts->having_one_edit_tab_cap($tabname),
-                $this->baseurl, $cat);
+                $this->baseurl, $cat, $myquestions);
         $this->display_options($recurse, $showhidden, $showquestiontext);
 
         if (!$category = $this->get_current_category($cat)) {
@@ -1443,13 +1443,17 @@ class question_bank_view {
     /**
      * prints a form to choose categories
      */
-    protected function display_category_form($contexts, $pageurl, $current) {
+    protected function display_category_form($contexts, $pageurl, $current, $myquestions=false) {
         global $CFG, $OUTPUT;
 
     /// Get all the existing categories now
         echo '<div class="choosecategory">';
-        $catmenu = question_category_options($contexts, false, 0, true);
-
+        
+		if($myquestions)
+			$catmenu = question_category_options_myquestions($contexts, false, 0, true);
+		else 
+			$catmenu = question_category_options($contexts, false, 0, true);
+			
         $select = new single_select($this->baseurl, 'category', $catmenu, $current, null, 'catmenu');
         $select->set_label(get_string('selectacategory', 'question'));
         echo $OUTPUT->render($select);
@@ -2057,5 +2061,68 @@ function create_new_question_button($categoryid, $params, $caption, $tooltip = '
         $choiceformprinted = true;
     }
 }
+/**
+ * Output an array of question categories.
+ */
+function question_category_options_myquestions($contexts, $top = false, $currentcat = 0,
+        $popupform = false, $nochildrenof = -1) {
+    global $CFG;
+    $pcontexts = array();
+    foreach ($contexts as $context) {
+        $pcontexts[] = $context->id;
+    }
+    $contextslist = join($pcontexts, ', ');
 
+    $categories = get_categories_for_contexts_myquestions($contextslist);
+    
+    $categories = question_add_context_in_key($categories);
+
+    if ($top) {
+        $categories = question_add_tops($categories, $pcontexts);
+    }
+    $categories = add_indented_names($categories, $nochildrenof);
+
+    // sort cats out into different contexts
+    $categoriesarray = array();
+    foreach ($pcontexts as $contextid) {
+        $context = context::instance_by_id($contextid);
+        $contextstring = $context->get_context_name(true, true);
+        foreach ($categories as $category) {
+            if ($category->contextid == $contextid) {
+                $cid = $category->id;
+                if ($currentcat != $cid || $currentcat == 0) {
+                    $countstring = !empty($category->questioncount) ?
+                            " ($category->questioncount)" : '';
+                    $categoriesarray[$contextstring][$cid] =
+                            format_string($category->indentedname, true,
+                                array('context' => $context)) . $countstring;
+                }
+            }
+        }
+    }
+    if ($popupform) {
+        $popupcats = array();
+        foreach ($categoriesarray as $contextstring => $optgroup) {
+            $group = array();
+            foreach ($optgroup as $key => $value) {
+                $key = str_replace($CFG->wwwroot, '', $key);
+                $group[$key] = $value;
+            }
+            $popupcats[] = array($contextstring => $group);
+        }
+        return $popupcats;
+    } else {
+        return $categoriesarray;
+    }
+}
+function get_categories_for_contexts_myquestions($contexts, $sortorder = 'parent, sortorder, name ASC') {
+    global $DB, $USER;
+    $sql="SELECT c.*, (SELECT count(1) FROM {question} q
+         WHERE c.id = q.category AND q.hidden='0' AND q.createdby='".$USER->id."' AND q.parent='0') AS questioncount
+         FROM {question_categories} c
+         WHERE c.contextid IN ($contexts)
+         ORDER BY $sortorder";
+         
+    return $DB->get_records_sql($sql);
+}
 
