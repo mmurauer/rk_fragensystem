@@ -2019,7 +2019,7 @@ function print_qtype_to_add_option($qtype) {
     $fakequestion = new stdClass();
     $fakequestion->qtype = $qtype->name();
     echo print_question_icon($fakequestion);
-    echo $qtype->menu_name() . '</span><span class="qtypesummary">' .
+    echo $qtype->menu_name() . '</span><span class="qtypesummary" style="overflow-y: auto; overflow-x: none;">' .
             get_string('pluginnamesummary', $qtype->plugin_name());
     echo "</span></label>\n";
     echo "</div>\n";
