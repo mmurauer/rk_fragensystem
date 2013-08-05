@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
+require_once dirname(__FILE__) . '/inc.php';
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 
@@ -77,9 +77,6 @@ if ($attemptobj->is_finished()) {
     redirect($attemptobj->review_url());
 }
 
-$PAGE->navbar->add(get_string('summaryofattempt', 'quiz'));
-$PAGE->set_title(format_string($attemptobj->get_quiz_name()));
-$PAGE->set_heading($attemptobj->get_course()->fullname);
-
+block_rk_fragesystem_print_header("mytests");
 // Display the page.
 echo $output->summary_page($attemptobj, $displayoptions);

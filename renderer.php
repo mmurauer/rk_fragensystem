@@ -552,7 +552,7 @@ class block_rk_fragesystem_renderer extends plugin_renderer_base {
      */
     public function summary_page($attemptobj, $displayoptions) {
         $output = '';
-        $output .= $this->header();
+       // $output .= $this->header();
         $output .= $this->heading(format_string($attemptobj->get_quiz_name()));
         $output .= $this->heading(get_string('summaryofattempt', 'quiz'), 3);
         $output .= $this->summary_table($attemptobj, $displayoptions);
@@ -626,7 +626,7 @@ class block_rk_fragesystem_renderer extends plugin_renderer_base {
         // Return to place button.
         if ($attemptobj->get_state() == quiz_attempt::IN_PROGRESS) {
             $button = new single_button(
-                    new moodle_url("attempt.php", array("page"=>$attemptobj->get_currentpage(),"attempt"=>$attemptobj->get_attemptid(),"courseid"=>$attemptobj->get_courseid())),
+                    new moodle_url("attempt.php", array("attempt"=>$attemptobj->get_attemptid(),"courseid"=>$attemptobj->get_courseid())),
                     get_string('returnattempt', 'quiz'));
             $output .= $this->container($this->container($this->render($button),
                     'controls'), 'submitbtns mdl-align');

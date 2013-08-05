@@ -138,7 +138,7 @@ if (!$finishattempt) {
                 $debuginfo = $e->debuginfo;
             }
             print_error('errorprocessingresponses', 'question',
-                    $attemptobj->attempt_url(null, $thispage), $e->getMessage(), $debuginfo);
+                    new moodle_url("mytests.php",array("courseid" => $attemptobj->get_courseid())), $e->getMessage(), $debuginfo);
         }
 
     } else {
@@ -171,7 +171,7 @@ try {
 
 } catch (question_out_of_sequence_exception $e) {
     print_error('submissionoutofsequencefriendlymessage', 'question',
-            $attemptobj->attempt_url(null, $thispage));
+            new moodle_url("mytests.php",array("courseid" => $attemptobj->get_courseid())));
 
 } catch (Exception $e) {
     // This sucks, if we display our own custom error message, there is no way
@@ -181,7 +181,7 @@ try {
         $debuginfo = $e->debuginfo;
     }
     print_error('errorprocessingresponses', 'question',
-            $attemptobj->attempt_url(null, $thispage), $e->getMessage(), $debuginfo);
+            new moodle_url("mytests.php",array("courseid" => $attemptobj->get_courseid())), $e->getMessage(), $debuginfo);
 }
 
 // Send the user to the review page.
