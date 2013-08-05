@@ -213,7 +213,7 @@ function block_rk_fragesystem_copy_quiz($copyid) {
 	$copyquiz->questions .= ",0";
 	$copyquiz->name = "Kopie von ".$copyquiz->name;
 
-	block_rk_fragesystem_add_test($copyquiz,$COURSE->id,true);
+	block_rk_fragesystem_add_test($copyquiz,$COURSE->id, $copyid, true);
 }
 function block_rk_fragesystem_print_attempt($quizid, $type="best") {
 	global $CFG, $COURSE;
@@ -408,7 +408,7 @@ function block_rk_fragesystem_edit_flashcard($post) {
 /**
  * Write a new item into database
  */
-function block_rk_fragesystem_add_test($post, $courseid, $copy = false) {
+function block_rk_fragesystem_add_test($post, $courseid, $copyid, $copy = false) {
 	global $CFG, $USER, $DB;
 
 	if(!$copy) {
@@ -438,6 +438,13 @@ function block_rk_fragesystem_add_test($post, $courseid, $copy = false) {
 	$data->quizid = $post->id;
 	$DB->insert_record('block_rk_user_quizes', $data);
 
+	$records = $DB->get_records('quiz_question_instances', array('quiz'=>$copyid));
+	
+	foreach($records as $record){
+		$record->quiz = $post->id;
+		$DB->insert_record('quiz_question_instances', $record);
+	}
+	
 	// Eintrag in course_modules Tabelle
 	$mod = $DB->get_record('modules', array('name'=> 'quiz'));
 	$cm = new stdClass();
