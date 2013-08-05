@@ -163,7 +163,7 @@ function block_rk_fragesystem_mytest_list($courseid) {
 			echo '<a href="'.$CFG->wwwroot.'/blocks/rk_fragesystem/startattempt.php?courseid='.$COURSE->id.'&id='.$cm->id.'">'.$quizinstance->name.'</a>';
 			echo '</td><td>';
 			echo "<a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/edit.php?courseid=" . $COURSE->id . "&action=edit&cmid=" . $cm->id . "'><img width=\"16px\" height=\"16px\" src=\"pix/pencil.png\" alt='Edit' title='Editieren' /></a>";
-			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/addtest.php?courseid=" . $COURSE->id . "&action=delete&id=" . $quizinstance->id . "'><img width=\"16px\" height=\"16px\" src=\"pix/cross.png\" alt='Delete' title='L�schen'/></a>";
+			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/addtest.php?courseid=" . $COURSE->id . "&action=delete&id=" . $quizinstance->id . "'><img width=\"16px\" height=\"16px\" src=\"pix/cross.png\" alt='Delete' title='Löschen'/></a>";
 			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/mytests.php?courseid=" . $COURSE->id . "&copyid=" . $quizinstance->id . "'><img src=\"$CFG->wwwroot/pix/i/backup.gif\" alt='Kopieren' title='Kopieren' /></a>";
 			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/reviews.php?courseid=" . $COURSE->id . "&id=" . $quizinstance->id . "'><img src=\"$CFG->wwwroot/pix/i/grades.gif\" alt='Review' title='Ergebnisse' /></a>";
 			echo "</td><td>";

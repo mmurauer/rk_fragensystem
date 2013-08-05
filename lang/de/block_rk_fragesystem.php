@@ -18,7 +18,7 @@ $string['deleteconfirmtest'] = 'Test wirklich l&ouml;schen?';
 $string['deleteconfirmflashcard'] = 'Lernkartei wirklich l&ouml;schen?';
 
 $string['intro'] = 'Einf&uuml;hrung';
-$string['intro_help'] = 'Hilfe f�r Einf&uuml;hrung';
+$string['intro_help'] = 'Hilfe f&uuml;r Einf&uuml;hrung';
 $string['random'] = 'Zufallsfrage';
 $string['random_help'] = 'Zufallsfragen sind ein besonderer Fragentyp.
 
