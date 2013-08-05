@@ -191,7 +191,7 @@ function block_rk_fragesystem_print_quiz_review($id, $attempt=0) {
 	echo '<tr>';
 	echo '<th class="header" align="left" scope="col" style="white-space:nowrap;">Versuch</th>';
 	echo '<th class="header" align="left" scope="col" style="white-space:nowrap;">Datum</th>';
-	echo '<th class="header" align="left" scope="col" style="white-space:nowrap;">Punkte/' . substr_count($quiz->questions, ",") . '</th>';
+	echo '<th class="header" align="left" scope="col" style="white-space:nowrap;">Punkte</th>';
 	echo '</tr>';
 	block_rk_fragesystem_print_attempt($id, $type = "best");
 	block_rk_fragesystem_print_attempt($id, $type = "worst");
@@ -236,7 +236,7 @@ function block_rk_fragesystem_print_attempt($quizid, $type="best") {
 		echo '<tr>';
 		echo "<td><a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/review.php?courseid=" . $COURSE->id . "&id=" . $quizid . "&attempt=" . $attempt->id . "'><img src=\"$CFG->wwwroot/pix/i/search.gif\" alt='see attempt' /></a>" . $desc . "</td>";
 		echo '<td>' . date("D M j G:i Y", $attempt->timefinish) . '</td>';
-		echo '<td>' . $attempt->sumgrades . '</td>';
+		echo '<td>' . number_format($attempt->sumgrades,2) . '/' . (substr_count(str_replace(",0", "", $attempt->layout), ",") + 1) . '</td>';
 		echo '</tr>';
 	}
 }
@@ -408,7 +408,7 @@ function block_rk_fragesystem_edit_flashcard($post) {
 /**
  * Write a new item into database
  */
-function block_rk_fragesystem_add_test($post, $courseid, $copyid, $copy = false) {
+function block_rk_fragesystem_add_test($post, $courseid, $copyid = 0, $copy = false) {
 	global $CFG, $USER, $DB;
 
 	if(!$copy) {
@@ -438,11 +438,13 @@ function block_rk_fragesystem_add_test($post, $courseid, $copyid, $copy = false)
 	$data->quizid = $post->id;
 	$DB->insert_record('block_rk_user_quizes', $data);
 
-	$records = $DB->get_records('quiz_question_instances', array('quiz'=>$copyid));
-	
-	foreach($records as $record){
-		$record->quiz = $post->id;
-		$DB->insert_record('quiz_question_instances', $record);
+	if($copy) {
+		$records = $DB->get_records('quiz_question_instances', array('quiz'=>$copyid));
+
+		foreach($records as $record){
+			$record->quiz = $post->id;
+			$DB->insert_record('quiz_question_instances', $record);
+		}
 	}
 	
 	// Eintrag in course_modules Tabelle
@@ -562,10 +564,10 @@ function block_rk_fragesystem_list_question_categories_new($thiscontext, $course
 			$subcategories = block_rk_fragesystem_get_sub_categories($cat);
 			if($subcategories == null) {
 				$cat->count = $DB->count_records('question', array('category'=>$cat->id));
-	
+
 			} else
 				$cat->count = 0;
-	
+
 			$cat->level = 0;
 			$categories[] = $cat;
 			$categories = array_merge($categories,$subcategories);
@@ -624,12 +626,12 @@ function block_rk_fragesystem_print_category_dropdown($categories, $courseid, $c
 			echo '<option ' . $selected . ' value="allquestions.php?courseid=' . $courseid . '&cat=' . $category->id . '">';
 		else
 			echo '<option ' . $selected . ' value="edit.php?courseid=' . $courseid . '&cmid=' . $cmid . '&cat=' . $category->id . '">';
-		
+
 		if(!isset($category->level))
 			$category->level = 0;
-		
+
 		for($i=0;$i<$category->level;$i++)
-		echo '&nbsp;';
+			echo '&nbsp;';
 			
 		echo $category->name . ' ('.$category->count.')</option>';
 	}
@@ -740,7 +742,7 @@ function block_rk_fragesystem_print_category_checkbox($categories, $courseid, $i
 		if(array_key_exists($category->id,$karteicategories)) continue;
 		if(!isset($category->level))
 			$category->level = 0;
-		
+
 		for($i=0;$i<$category->level;$i++)
 			echo '&nbsp;';
 		if($category->count>0)
@@ -1043,7 +1045,7 @@ function block_rk_fragesystem_print_question_list_for_all($cat, $courseid) {
 				continue;
 
 			$link = new moodle_url($detailurl.$question->id.'&courseid='.$courseid);
-			$html = $OUTPUT->action_link($link, '<img src="'.$CFG->wwwroot.'/pix/t/preview.gif">', new popup_action('click', $link, 'watchdetail', array('height' => 400, 'width' => 1000)));
+			$html = $OUTPUT->action_link($link, '<img src="'.$CFG->wwwroot.'/pix/t/preview.png">', new popup_action('click', $link, 'watchdetail', array('height' => 400, 'width' => 1000)));
 
 			echo '<tr>';echo '<td>';
 			echo $html." ".$question->name;;
