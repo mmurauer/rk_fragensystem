@@ -47,11 +47,11 @@ class block_rk_fragesystem_renderer extends plugin_renderer_base {
      * @return $output containing html data.
      */
     public function review_page(quiz_attempt $attemptobj, $slots, $page, $showall,
-                                $lastpage, block_rk_fragesystem_display_options $displayoptions,
+                                $lastpage, $displayoptions,
                                 $summarydata) {
 
         $output = '';
-        $output .= $this->header();
+       // $output .= $this->header();
         $output .= $this->review_summary_table($summarydata, $page);
         $output .= $this->review_form($page, $showall, $displayoptions,
                 $this->questions($attemptobj, true, $slots, $page, $showall, $displayoptions),
@@ -73,7 +73,7 @@ class block_rk_fragesystem_renderer extends plugin_renderer_base {
      * @return $output containing html data.
      */
     public function review_question_page(quiz_attempt $attemptobj, $slot, $seq,
-            block_rk_fragesystem_display_options $displayoptions, $summarydata) {
+            $displayoptions, $summarydata) {
 
         $output = '';
         $output .= $this->header();
@@ -178,7 +178,7 @@ class block_rk_fragesystem_renderer extends plugin_renderer_base {
      * @param block_rk_fragesystem_display_options $displayoptions instance of block_rk_fragesystem_display_options
      */
     public function questions(quiz_attempt $attemptobj, $reviewing, $slots, $page, $showall,
-                              block_rk_fragesystem_display_options $displayoptions) {
+                              $displayoptions) {
         $output = '';
         foreach ($slots as $slot) {
             $output .= $attemptobj->render_question($slot, $reviewing,
@@ -213,9 +213,9 @@ class block_rk_fragesystem_renderer extends plugin_renderer_base {
         $output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'sesskey',
                 'value' => sesskey()));
         $output .= html_writer::start_tag('div', array('class' => 'submitbtns'));
-        $output .= html_writer::empty_tag('input', array('type' => 'submit',
+      /*  $output .= html_writer::empty_tag('input', array('type' => 'submit',
                 'class' => 'questionflagsavebutton', 'name' => 'savingflags',
-                'value' => get_string('saveflags', 'question')));
+                'value' => get_string('saveflags', 'question')));*/
         $output .= html_writer::end_tag('div');
         $output .= html_writer::end_tag('div');
         $output .= html_writer::end_tag('form');
@@ -251,10 +251,11 @@ class block_rk_fragesystem_renderer extends plugin_renderer_base {
      * @param bool $lastpage if true current page is the last page
      */
     public function review_next_navigation(quiz_attempt $attemptobj, $page, $lastpage) {
-        if ($lastpage) {
-            $nav = $this->finish_review_link($attemptobj);
-        } else {
-            $nav = link_arrow_right(get_string('next'), $attemptobj->review_url(null, $page + 1));
+        $nav = null;
+    	if (!$lastpage) {
+        	$url = $attemptobj->review_url(null, $page + 1);
+        	$url = str_replace('/mod/quiz', '/blocks/rk_fragesystem', $url);
+            $nav = link_arrow_right(get_string('next'), $url);
         }
         return html_writer::tag('div', $nav, array('class' => 'submitbtns'));
     }
@@ -387,7 +388,7 @@ class block_rk_fragesystem_renderer extends plugin_renderer_base {
 
     public function start_attempt_page(quiz $quizobj, block_rk_fragesystem_preflight_check_form $mform) {
         $output = '';
-        $output .= $this->header();
+       // $output .= $this->header();
         $output .= $this->quiz_intro($quizobj->get_quiz(), $quizobj->get_cm());
         ob_start();
         $mform->display();
@@ -410,7 +411,7 @@ class block_rk_fragesystem_renderer extends plugin_renderer_base {
     public function attempt_page($attemptobj, $page, $accessmanager, $messages, $slots, $id,
             $nextpage) {
         $output = '';
-        $output .= $this->header();
+        //$output .= $this->header();
         $output .= $this->quiz_notices($messages);
         $output .= $this->attempt_form($attemptobj, $page, $slots, $id, $nextpage);
         $output .= $this->footer();
@@ -593,7 +594,7 @@ class block_rk_fragesystem_renderer extends plugin_renderer_base {
                         'alt' => get_string('flagged', 'question'), 'class' => 'questionflag icon-post'));
             }
             if ($attemptobj->can_navigate_to($slot)) {
-                $row = array(html_writer::link($attemptobj->attempt_url($slot),
+                $row = array(html_writer::link(new moodle_url("attempt.php",array("attempt"=>$attemptobj->get_attemptid(),"page"=>$slot,"courseid"=>$attemptobj->get_courseid())),
                         $attemptobj->get_question_number($slot) . $flag),
                         $attemptobj->get_question_status($slot, $displayoptions->correctness));
             } else {
@@ -625,7 +626,7 @@ class block_rk_fragesystem_renderer extends plugin_renderer_base {
         // Return to place button.
         if ($attemptobj->get_state() == quiz_attempt::IN_PROGRESS) {
             $button = new single_button(
-                    new moodle_url($attemptobj->attempt_url(null, $attemptobj->get_currentpage())),
+                    new moodle_url("attempt.php", array("page"=>$attemptobj->get_currentpage(),"attempt"=>$attemptobj->get_attemptid(),"courseid"=>$attemptobj->get_courseid())),
                     get_string('returnattempt', 'quiz'));
             $output .= $this->container($this->container($this->render($button),
                     'controls'), 'submitbtns mdl-align');
@@ -641,7 +642,7 @@ class block_rk_fragesystem_renderer extends plugin_renderer_base {
         );
 
         $button = new single_button(
-                new moodle_url($attemptobj->processattempt_url(), $options),
+                new moodle_url(new moodle_url("processattempt.php"), $options),
                 get_string('submitallandfinish', 'quiz'));
         $button->id = 'responseform';
         if ($attemptobj->get_state() == quiz_attempt::IN_PROGRESS) {

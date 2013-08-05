@@ -54,9 +54,9 @@ if ($next) {
     $page = $thispage;
 }
 if ($page == -1) {
-    $nexturl = $attemptobj->summary_url();
+    $nexturl = new moodle_url('summary.php', array('attempt' => $attemptid));
 } else {
-    $nexturl = new moodle_url("attempt.php",array("attempt"=>$attemptid));
+    $nexturl = new moodle_url("attempt.php",array("attempt"=>$attemptid,"page"=>$page));
     if ($scrollpos !== '') {
         $nexturl->param('scrollpos', $scrollpos);
     }
@@ -83,7 +83,6 @@ if ($timeclose !== false && $timenow > $timeclose - QUIZ_MIN_TIME_TO_CONTINUE) {
 
 // Check login.
 require_login($attemptobj->get_course(), false);
-require_sesskey();
 
 // Check that this attempt belongs to this user.
 if ($attemptobj->get_userid() != $USER->id) {
@@ -121,8 +120,6 @@ if ($timeup) {
     }
 }
 
-// Don't log - we will end with a redirect to a page that is logged.
-
 if (!$finishattempt) {
     // Just process the responses for this page and go to the next page.
     if (!$toolate) {
@@ -131,7 +128,7 @@ if (!$finishattempt) {
 
         } catch (question_out_of_sequence_exception $e) {
             print_error('submissionoutofsequencefriendlymessage', 'question',
-                    $attemptobj->attempt_url(null, $thispage));
+                    new moodle_url("mytests.php",array("courseid" => $attemptobj->get_courseid())));
 
         } catch (Exception $e) {
             // This sucks, if we display our own custom error message, there is no way
@@ -151,8 +148,8 @@ if (!$finishattempt) {
 
     $transaction->allow_commit();
     if ($becomingoverdue) {
-        redirect($attemptobj->summary_url());
-    } else {
+        redirect(new moodle_url('summary.php', array('attempt' => $attemptid)));
+    } else {    	
         redirect($nexturl);
     }
 }
@@ -189,4 +186,4 @@ try {
 
 // Send the user to the review page.
 $transaction->allow_commit();
-redirect($attemptobj->review_url());
+redirect(new moodle_url("review.php",array("attempt"=>$attemptid,"courseid"=>$attemptobj->get_courseid())));

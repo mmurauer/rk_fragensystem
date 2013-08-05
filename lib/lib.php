@@ -165,7 +165,7 @@ function block_rk_fragesystem_mytest_list($courseid) {
 			echo "<a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/edit.php?courseid=" . $COURSE->id . "&action=edit&cmid=" . $cm->id . "'><img width=\"16px\" height=\"16px\" src=\"pix/pencil.png\" alt='Edit' title='Editieren' /></a>";
 			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/addtest.php?courseid=" . $COURSE->id . "&action=delete&id=" . $quizinstance->id . "'><img width=\"16px\" height=\"16px\" src=\"pix/cross.png\" alt='Delete' title='L�schen'/></a>";
 			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/mytests.php?courseid=" . $COURSE->id . "&copyid=" . $quizinstance->id . "'><img src=\"$CFG->wwwroot/pix/i/backup.gif\" alt='Kopieren' title='Kopieren' /></a>";
-			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/review.php?courseid=" . $COURSE->id . "&id=" . $quizinstance->id . "'><img src=\"$CFG->wwwroot/pix/i/grades.gif\" alt='Review' title='Ergebnisse' /></a>";
+			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/reviews.php?courseid=" . $COURSE->id . "&id=" . $quizinstance->id . "'><img src=\"$CFG->wwwroot/pix/i/grades.gif\" alt='Review' title='Ergebnisse' /></a>";
 			echo "</td><td>";
 			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/printtest.php?courseid=" . $COURSE->id . "&id=" . $quizinstance->id . "' target='_blank'><img src=\"pix/pdf_red.gif\" alt='Print' title='Drucken' /></a>";
 			echo " <a href='" . $CFG->wwwroot . "/blocks/rk_fragesystem/printtest.php?courseid=" . $COURSE->id . "&id=" . $quizinstance->id . "&correct=1' target='_blank'><img src=\"pix/pdf.gif\" alt='Print' title='Korrekturtest drucken' /></a>";
@@ -244,9 +244,9 @@ function block_rk_fragesystem_print_attempt($quizid, $type="best") {
 function block_rk_fragesystem_get_quiz_attempts($quizid, $option='max') {
 	global $USER, $CFG, $DB;
 	if ($option == "latest")
-		$attempt = $DB->get_record_sql('select * from ' . $CFG->prefix . 'quiz_attempts where quiz=' . $quizid . ' AND userid=' . $USER->id . ' and timefinish=(SELECT max(timefinish) FROM ' . $CFG->prefix . 'quiz_attempts WHERE userid=' . $USER->id . ' and quiz=' . $quizid . ') limit 0,1', true, true);
+		$attempt = $DB->get_record_sql('select * from {quiz_attempts} where quiz=' . $quizid . ' AND userid=' . $USER->id . ' and timefinish=(SELECT max(timefinish) FROM {quiz_attempts} WHERE userid=' . $USER->id . ' and quiz=' . $quizid . ') limit 0,1');
 	else
-		$attempt = $DB->get_record_sql('select * from ' . $CFG->prefix . 'quiz_attempts where quiz=' . $quizid . ' AND userid=' . $USER->id . ' and sumgrades=(SELECT ' . $option . '(sumgrades) FROM ' . $CFG->prefix . 'quiz_attempts WHERE userid=' . $USER->id . ' and quiz=' . $quizid . ' and timefinish > 0) order by timefinish desc limit 0,1', true, true);
+		$attempt = $DB->get_record_sql('select * from {quiz_attempts} where quiz=' . $quizid . ' AND userid=' . $USER->id . ' and sumgrades=(SELECT ' . $option . '(sumgrades) FROM {quiz_attempts} WHERE userid=' . $USER->id . ' and quiz=' . $quizid . ' and timefinish > 0) order by timefinish desc limit 0,1');
 
 	return $attempt;
 }
@@ -422,6 +422,13 @@ function block_rk_fragesystem_add_test($post, $courseid, $copy = false) {
 		$post->subnet = "";
 		$post->password = "";
 		$post->preferredbehaviour= "deferredfeedback";
+		$post->reviewattempt = 69904;
+		$post->reviewcorrectness = 4368;
+		$post->reviewmarks = 4368;
+		$post->reviewspecificfeedback = 4368;
+		$post->reviewgeneralfeedback = 4368;
+		$post->reviewrightanswer = 4368;
+		$post->reviewoverallfeedback = 4368;
 	}
 
 	$post->id = $DB->insert_record('quiz', $post);
